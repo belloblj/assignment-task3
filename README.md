@@ -20,19 +20,17 @@ To use `my-json-server`, make sure your `db.json` is located at the repo root.
 
 ## Setting up the image upload API
 
-Update the file `src/services/imageApi.ts`.
+Pictures are uploaded to [Freeimage.host](https://freeimage.host/page/api). `src/services/imageApi.ts`
+uses the public API key Freeimage.host publishes, so it works with no sign-up.
 
-You can use any hosting service of your preference. In this case, we will use ImgBB API: https://api.imgbb.com/.
-Sign up for free at https://imgbb.com/signup, get your API key and add it to the .env file in your root folder.
-
-To run the app in your local environment, you will need to set the IMGBB_API_KEY when starting the app using:
+To use your own key instead, start the app with:
 
 ```
-IMGBB_API_KEY="insert_your_api_key_here" npx expo start
+FREEIMAGE_API_KEY="insert_your_api_key_here" npx expo start
 ```
 
-When creating your app build or publishing, import your secret values to EAS running:
+## Where the app looks for json-server
 
-```
-eas secret:push
-```
+`src/services/api.ts` works this out automatically: `10.0.2.2` on the Android emulator, and on a
+real phone the same computer IP that Expo/Metro is served from. To force an address, start Expo with
+`API_URL="http://<ip>:3333"`.

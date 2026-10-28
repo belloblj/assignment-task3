@@ -1,28 +1,42 @@
-import axios, { AxiosResponse } from 'axios';
-import { getEnvironentVariable } from '../utils';
+import axios from 'axios';
+import Constants from 'expo-constants';
 
-// You can use any hosting service of your preference.
-// In this case, we will use ImgBB API: https://api.imgbb.com/.
+// Images are uploaded to Freeimage.host (https://freeimage.host/page/api), the storage
+// service suggested in the assignment brief.
 //
-// Sign up for free at https://imgbb.com/signup
-// Get your API key and add it to the .env file in your root folder.
-//
-// To run the app in your local environment, you will need to set the IMGBB_API_KEY
-// when starting the app using:
-// 'IMGBB_API_KEY="insert_your_api_key_here" npx expo start'
-//
-// When creating your app build or publishing, do not forget to run 'eas secret:push' command
-// to import your secret values to EAS.
+// The key below is the public key Freeimage.host publishes on its API page for anyone to use.
+// To use your own key instead, start Expo with:
+//   FREEIMAGE_API_KEY="your_key_here" npx expo start
+const PUBLIC_FREEIMAGE_KEY = '6d207e02198a847aa98d0a2a901485a5';
 
 const imageApi = axios.create({
-    baseURL: 'https://api.imgbb.com/1',
-    headers: { 'Content-Type': 'multipart/form-data' },
-    params: { key: getEnvironentVariable('IMGBB_API_KEY') },
+    baseURL: 'https://freeimage.host/api/1',
+    timeout: 30000,
 });
 
-export const uploadImage = (imageBase64: string): Promise<AxiosResponse> => {
-    const data = new FormData();
-    data.append('image', imageBase64);
+export interface ImageUploadResult {
+    url: string;
+    name: string;
+    size: number;
+}
 
-    return imageApi.post('/upload', data);
+export const uploadImage = async (imageBase64: string): Promise<ImageUploadResult> => {
+    const data = new FormData();
+    data.append('key', Constants.expoConfig?.extra?.FREEIMAGE_API_KEY || PUBLIC_FREEIMAGE_KEY);
+    data.append('action', 'upload');
+    data.append('format', 'json');
+    data.append('source', imageBase64);
+
+    const response = await imageApi.post('/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    const image = response.data?.image;
+    if (!image?.url) throw new Error(response.data?.error?.message ?? 'Upload failed');
+
+    return {
+        url: image.url,
+        name: image.filename ?? image.name ?? 'image.jpg',
+        size: Number(image.size ?? 0),
+    };
 };
