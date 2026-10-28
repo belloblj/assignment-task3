@@ -19,6 +19,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ios: {
         supportsTablet: true,
     },
+    android: {
+        // Needed for a local development build (`npx expo run:android`).
+        package: 'com.volunteam.app',
+        config: {
+            // Read from an environment variable so the key is never committed to Git.
+            googleMaps: { apiKey: process.env.GOOGLE_MAPS_API_KEY },
+        },
+    },
     web: {
         favicon: './assets/favicon.png',
     },

@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors } from '../constants/Colors';
 
 interface FlowHeaderProps {
     title: string;
@@ -19,7 +20,7 @@ export default function FlowHeader({ title, showBack = true, onBack, onCancel }:
         <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
             {showBack && onBack ? (
                 <BorderlessButton onPress={onBack} style={styles.iconButton}>
-                    <Feather name="arrow-left" size={24} color="#00A3FF" />
+                    <Feather name="arrow-left" size={24} color={Colors.back} />
                 </BorderlessButton>
             ) : (
                 <View style={styles.iconButton} />
@@ -29,7 +30,7 @@ export default function FlowHeader({ title, showBack = true, onBack, onCancel }:
 
             {onCancel ? (
                 <BorderlessButton onPress={onCancel} style={styles.iconButton}>
-                    <Feather name="x" size={24} color="#FF669D" />
+                    <Feather name="x" size={24} color={Colors.cancel} />
                 </BorderlessButton>
             ) : (
                 <View style={styles.iconButton} />
@@ -42,9 +43,9 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 24,
         paddingBottom: 16,
-        backgroundColor: '#F9FAFC',
+        backgroundColor: Colors.headerBackground,
         borderBottomWidth: 1,
-        borderColor: '#DDE3F0',
+        borderColor: Colors.headerBorder,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'Nunito_600SemiBold',
-        color: '#8fa7b3',
-        fontSize: 16,
+        color: Colors.label,
+        fontSize: 15,
     },
 });

@@ -128,7 +128,7 @@ export default function EventsMap(props: StackScreenProps<any>) {
                 {isLoading ? (
                     <ActivityIndicator color="#8fa7b3" />
                 ) : (
-                    <Text style={styles.footerText}>{events.length} event(s) found</Text>
+                    <Text style={styles.footerText}>{events.length === 1 ? '1 event found' : `${events.length} events found`}</Text>
                 )}
                 <RectButton
                     style={[styles.smallButton, { backgroundColor: '#00A3FF' }]}

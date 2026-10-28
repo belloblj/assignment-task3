@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { BorderlessButton, RectButton } from 'react-native-gesture-handler';
+import { Colors } from '../constants/Colors';
 import { UploadedImage } from '../types/Event';
 import { formatBytes } from '../utils';
 
@@ -19,8 +20,8 @@ interface ImageUploadCardProps {
 export default function ImageUploadCard({ image, isUploading, onAdd, onRemove }: ImageUploadCardProps) {
     if (isUploading) {
         return (
-            <View style={[styles.box, styles.center]}>
-                <ActivityIndicator color="#00A3FF" />
+            <View style={[styles.box, styles.empty, styles.center]}>
+                <ActivityIndicator color={Colors.primary} />
                 <Text style={styles.uploadingText}>Uploading picture…</Text>
             </View>
         );
@@ -28,7 +29,7 @@ export default function ImageUploadCard({ image, isUploading, onAdd, onRemove }:
 
     if (image) {
         return (
-            <View style={[styles.box, styles.uploaded]}>
+            <View style={[styles.box, styles.filled]}>
                 <Image source={{ uri: image.localUri }} style={styles.thumbnail} />
                 <View style={styles.details}>
                     <Text style={styles.fileName} numberOfLines={1}>
@@ -37,26 +38,30 @@ export default function ImageUploadCard({ image, isUploading, onAdd, onRemove }:
                     <Text style={styles.fileSize}>{formatBytes(image.size)}</Text>
                 </View>
                 <BorderlessButton onPress={onRemove} style={styles.removeButton}>
-                    <Feather name="x" size={20} color="#FF669D" />
+                    <Feather name="x" size={22} color={Colors.cancel} />
                 </BorderlessButton>
             </View>
         );
     }
 
+    // RectButton can't draw a dashed border, so the border lives on the View inside it.
     return (
-        <RectButton style={[styles.box, styles.center, styles.empty]} onPress={onAdd}>
-            <Feather name="plus" size={24} color="#00A3FF" />
+        <RectButton style={styles.touchable} onPress={onAdd}>
+            <View style={[styles.box, styles.empty, styles.center]}>
+                <Feather name="plus" size={24} color={Colors.pictureEmptyBorder} />
+            </View>
         </RectButton>
     );
 }
 
 const styles = StyleSheet.create({
+    touchable: {
+        borderRadius: 8,
+    },
     box: {
         height: 72,
-        borderRadius: 20,
-        backgroundColor: '#FFF',
-        borderWidth: 1.4,
-        borderColor: '#D3E2E5',
+        borderRadius: 8,
+        borderWidth: 1,
     },
     center: {
         justifyContent: 'center',
@@ -64,38 +69,41 @@ const styles = StyleSheet.create({
     },
     empty: {
         borderStyle: 'dashed',
-        borderColor: '#96D2F0',
-        backgroundColor: '#F5FBFE',
+        borderColor: Colors.pictureEmptyBorder,
+        backgroundColor: Colors.pictureEmptyBackground,
     },
     uploadingText: {
         marginTop: 4,
         fontFamily: 'Nunito_600SemiBold',
-        color: '#8fa7b3',
+        color: Colors.label,
         fontSize: 12,
     },
-    uploaded: {
+    filled: {
+        height: 88,
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 8,
+        backgroundColor: Colors.pictureFilledBackground,
+        borderColor: Colors.pictureFilledBorder,
     },
     thumbnail: {
-        width: 56,
-        height: 56,
-        borderRadius: 16,
+        width: 72,
+        height: 72,
+        borderRadius: 6,
     },
     details: {
         flex: 1,
         marginHorizontal: 12,
     },
     fileName: {
-        fontFamily: 'Nunito_700Bold',
-        color: '#5C8599',
+        fontFamily: 'Nunito_600SemiBold',
+        color: Colors.text,
         fontSize: 14,
     },
     fileSize: {
         fontFamily: 'Nunito_600SemiBold',
-        color: '#8fa7b3',
-        fontSize: 12,
+        color: Colors.text,
+        fontSize: 13,
     },
     removeButton: {
         padding: 8,

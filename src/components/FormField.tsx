@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { Colors } from '../constants/Colors';
 
 interface FormFieldProps {
     label: string;
@@ -30,41 +31,41 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'baseline',
-        marginBottom: 8,
+        marginBottom: 6,
     },
     label: {
         fontFamily: 'Nunito_600SemiBold',
-        color: '#8fa7b3',
-        fontSize: 16,
+        color: Colors.label,
+        fontSize: 14,
     },
     hint: {
-        fontFamily: 'Nunito_600SemiBold',
-        color: '#8fa7b3',
+        fontFamily: 'Nunito_400Regular',
+        color: Colors.label,
         fontSize: 11,
     },
     error: {
         marginTop: 4,
         fontFamily: 'Nunito_600SemiBold',
-        color: '#FF669D',
+        color: Colors.error,
         fontSize: 12,
     },
 });
 
 export const inputStyles = StyleSheet.create({
     input: {
-        backgroundColor: '#FFF',
-        borderWidth: 1.4,
-        borderColor: '#D3E2E5',
-        borderRadius: 20,
+        backgroundColor: Colors.inputBackground,
+        borderWidth: 1,
+        borderColor: Colors.inputBorder,
+        borderRadius: 8,
         height: 56,
-        paddingHorizontal: 24,
+        paddingHorizontal: 16,
         fontFamily: 'Nunito_600SemiBold',
-        color: '#5C8599',
+        color: Colors.text,
         fontSize: 15,
     },
     multiline: {
-        height: 110,
-        paddingTop: 16,
+        height: 120,
+        paddingTop: 14,
         textAlignVertical: 'top',
     },
 });

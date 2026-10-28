@@ -1,10 +1,11 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import MapView, { LatLng, MapPressEvent, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import customMapStyle from '../../map-style.json';
 import BigButton from '../components/BigButton';
 import FlowHeader from '../components/FlowHeader';
+import { Colors } from '../constants/Colors';
 import * as MapSettings from '../constants/MapSettings';
 import mapMarkerImg from '../images/map-marker.png';
 
@@ -43,15 +44,12 @@ export default function SelectEventPosition({ navigation }: StackScreenProps<any
                     )}
                 </MapView>
 
-                {!position && (
-                    <View style={styles.hint}>
-                        <Text style={styles.hintText}>Tap the map to set the event location</Text>
+                {/* As in the Figma design, "Next" only appears once a location is chosen. */}
+                {position && (
+                    <View style={styles.footer}>
+                        <BigButton label="Next" color={Colors.primary} onPress={handleNext} />
                     </View>
                 )}
-
-                <View style={styles.footer}>
-                    <BigButton label="Next" color="#00A3FF" disabled={!position} onPress={handleNext} />
-                </View>
             </View>
         </View>
     );
@@ -63,21 +61,6 @@ const styles = StyleSheet.create({
     },
     mapContainer: {
         flex: 1,
-    },
-    hint: {
-        position: 'absolute',
-        top: 24,
-        left: 24,
-        right: 24,
-        padding: 16,
-        borderRadius: 16,
-        backgroundColor: '#00A3FFE6',
-        alignItems: 'center',
-    },
-    hintText: {
-        fontFamily: 'Nunito_700Bold',
-        color: '#FFF',
-        fontSize: 15,
     },
     footer: {
         position: 'absolute',

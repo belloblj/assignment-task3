@@ -1,6 +1,5 @@
 import 'react-native-get-random-values'; // must come before uuid
 import { useActionSheet } from '@expo/react-native-action-sheet';
-import { Feather } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useContext, useMemo, useState } from 'react';
@@ -15,6 +14,7 @@ import BigButton from '../components/BigButton';
 import FlowHeader from '../components/FlowHeader';
 import FormField, { inputStyles } from '../components/FormField';
 import ImageUploadCard from '../components/ImageUploadCard';
+import { Colors } from '../constants/Colors';
 import { AuthenticationContext } from '../context/AuthenticationContext';
 import * as api from '../services/api';
 import { uploadImage } from '../services/imageApi';
@@ -23,6 +23,10 @@ import { formatAMPM, updateDateWithNewTime } from '../utils';
 
 const NAME_MAX = 60;
 const DESCRIPTION_MAX = 300;
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// "Oct 20, 2023" (written by hand: Android's JS engine ignores toLocaleDateString options)
+const formatShortDate = (d: Date) => `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 
 type Field = 'name' | 'description' | 'volunteersNeeded' | 'date' | 'time' | 'image';
 
@@ -185,10 +189,12 @@ export default function EventData({ navigation, route }: StackScreenProps<any>) 
                 onBack={() => navigation.goBack()}
                 onCancel={() => navigation.navigate('EventsMap')}
             />
-            <KeyboardAwareScrollView contentContainerStyle={styles.content} extraScrollHeight={24}>
-                <Text style={styles.title}>Event details</Text>
-
-                <FormField label="Name" hint={`${name.length}/${NAME_MAX}`} error={errorFor('name')}>
+            <KeyboardAwareScrollView
+                style={styles.scroll}
+                contentContainerStyle={styles.content}
+                extraScrollHeight={24}
+            >
+                <FormField label="Event Name" error={errorFor('name')}>
                     <TextInput
                         style={inputStyles.input}
                         value={name}
@@ -198,11 +204,7 @@ export default function EventData({ navigation, route }: StackScreenProps<any>) 
                     />
                 </FormField>
 
-                <FormField
-                    label="About"
-                    hint={`${description.length}/${DESCRIPTION_MAX}`}
-                    error={errorFor('description')}
-                >
+                <FormField label="About" hint={`${DESCRIPTION_MAX} characters max.`} error={errorFor('description')}>
                     <TextInput
                         style={[inputStyles.input, inputStyles.multiline]}
                         value={description}
@@ -213,7 +215,7 @@ export default function EventData({ navigation, route }: StackScreenProps<any>) 
                     />
                 </FormField>
 
-                <FormField label="Volunteers needed" error={errorFor('volunteersNeeded')}>
+                <FormField label="Volunteers Needed" error={errorFor('volunteersNeeded')}>
                     <TextInput
                         style={inputStyles.input}
                         value={volunteersNeeded}
@@ -221,6 +223,22 @@ export default function EventData({ navigation, route }: StackScreenProps<any>) 
                         onChangeText={(text) => setVolunteersNeeded(text.replace(/[^0-9]/g, ''))}
                         onBlur={() => touch('volunteersNeeded')}
                     />
+                </FormField>
+
+                <FormField label="Date and Time" error={errorFor('date') ?? errorFor('time')}>
+                    <View style={styles.row}>
+                        <RectButton style={[inputStyles.input, styles.pickerButton]} onPress={() => setPickerMode('date')}>
+                            <Text style={[styles.pickerText, !date && styles.placeholder]}>
+                                {date ? formatShortDate(date) : 'Date'}
+                            </Text>
+                        </RectButton>
+                        <View style={styles.gap} />
+                        <RectButton style={[inputStyles.input, styles.pickerButton]} onPress={() => setPickerMode('time')}>
+                            <Text style={[styles.pickerText, !time && styles.placeholder]}>
+                                {time ? formatAMPM(time).toUpperCase() : 'Time'}
+                            </Text>
+                        </RectButton>
+                    </View>
                 </FormField>
 
                 <FormField label="Picture" error={errorFor('image')}>
@@ -232,30 +250,9 @@ export default function EventData({ navigation, route }: StackScreenProps<any>) 
                     />
                 </FormField>
 
-                <View style={styles.row}>
-                    <View style={styles.half}>
-                        <FormField label="Date" error={errorFor('date')}>
-                            <RectButton style={[inputStyles.input, styles.pickerButton]} onPress={() => setPickerMode('date')}>
-                                <Text style={styles.pickerText}>{date ? date.toLocaleDateString() : 'Select'}</Text>
-                                <Feather name="calendar" size={18} color="#8fa7b3" />
-                            </RectButton>
-                        </FormField>
-                    </View>
-                    <View style={styles.gap} />
-                    <View style={styles.half}>
-                        <FormField label="Time" error={errorFor('time')}>
-                            <RectButton style={[inputStyles.input, styles.pickerButton]} onPress={() => setPickerMode('time')}>
-                                <Text style={styles.pickerText}>{time ? formatAMPM(time) : 'Select'}</Text>
-                                <Feather name="clock" size={18} color="#8fa7b3" />
-                            </RectButton>
-                        </FormField>
-                    </View>
-                </View>
-
                 <View style={styles.saveRow}>
-                    <BigButton label="Save" color="#FF8700" disabled={!canSave} onPress={handleSave} />
+                    <BigButton label="Save" color={Colors.primary} disabled={!canSave} onPress={handleSave} />
                 </View>
-                {!formIsValid && <Text style={styles.saveHint}>Fill in every field to enable Save</Text>}
             </KeyboardAwareScrollView>
 
             <DateTimePickerModal
@@ -264,14 +261,17 @@ export default function EventData({ navigation, route }: StackScreenProps<any>) 
                 date={(pickerMode === 'time' ? time : date) ?? new Date()}
                 minimumDate={pickerMode === 'date' ? new Date() : undefined}
                 onConfirm={(picked) => {
-                    if (pickerMode === 'date') {
+                    // Hide the picker FIRST. On Android, any re-render while it is still
+                    // marked visible makes the native dialog pop up a second time.
+                    const mode = pickerMode;
+                    setPickerMode(undefined);
+                    if (mode === 'date') {
                         setDate(picked);
                         touch('date');
                     } else {
                         setTime(picked);
                         touch('time');
                     }
-                    setPickerMode(undefined);
                 }}
                 onCancel={() => setPickerMode(undefined)}
             />
@@ -284,49 +284,36 @@ export default function EventData({ navigation, route }: StackScreenProps<any>) 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: Colors.background,
+    },
+    scroll: {
+        backgroundColor: Colors.background,
     },
     content: {
         padding: 24,
         paddingBottom: 48,
     },
-    title: {
-        fontFamily: 'Nunito_700Bold',
-        color: '#5C8599',
-        fontSize: 24,
-        marginBottom: 24,
-        paddingBottom: 16,
-        borderBottomWidth: 0.8,
-        borderBottomColor: '#D3E2E6',
-    },
     row: {
         flexDirection: 'row',
     },
-    half: {
-        flex: 1,
-    },
     gap: {
-        width: 16,
+        width: 12,
     },
     pickerButton: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center',
     },
     pickerText: {
         fontFamily: 'Nunito_600SemiBold',
-        color: '#5C8599',
+        color: Colors.text,
         fontSize: 15,
+    },
+    placeholder: {
+        color: '#C1CFD6',
     },
     saveRow: {
         flexDirection: 'row',
-        marginTop: 16,
-    },
-    saveHint: {
         marginTop: 8,
-        textAlign: 'center',
-        fontFamily: 'Nunito_600SemiBold',
-        color: '#8fa7b3',
-        fontSize: 12,
     },
     spinnerText: {
         fontFamily: 'Nunito_700Bold',
